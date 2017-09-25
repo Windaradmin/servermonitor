@@ -1,2 +1,3 @@
-# servermonitor
-VPN server monitoring
+# servermonitor with Gmail
+VPN server monitoring with MonIT and GMail.
+
