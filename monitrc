@@ -1,0 +1,75 @@
+#####
+#### Install on a Ubuntu :  apt-get install monit ssmtp ; sudo ufw allow 2812/tcp
+###Setup file for MonitRC
+set daemon 30
+with start delay 12
+set logfile /var/log/monit.log
+set idfile /var/lib/monit/id
+set statefile /var/lib/monit/state
+set httpd port 2812 and
+  use address 0.0.0.0
+  allow 0.0.0.0/0.0.0.0
+   allow admin:admin
+# Send alerts to this address
+set alert *********@gmail.com { instance, action }
+set mailserver smtp.gmail.com port 587
+    username "***********@gmail.com" password "***********"
+    using tlsv1
+    with timeout 30 seconds
+set mail-format {
+      from: monit@$HOST
+   subject: Server alert --  $EVENT $SERVICE
+   message: $EVENT Service $SERVICE
+                 Date:        $DATE
+                 Action:      $ACTION
+                 Host:        $HOST
+                 Description: $DESCRIPTION
+            Your faithful employee,
+            VPN-server in China
+}
+check system localhost
+   if loadavg (1min) > 4 then alert
+   if loadavg (5min) > 2 then alert
+   if memory usage > 75% then alert
+   if cpu usage (user) > 70% then alert
+   if cpu usage (system) > 30% then alert
+   if cpu usage (wait) > 20% then alert
+#disk space monitoring
+check device root with path /
+    if SPACE usage > 80% then alert
+check file mail.log with path /var/log/mail.log
+    if timestamp > 10 minutes then alert
+# OpenVPN
+check process vpn-network with pidfile /var/run/openvpn/server.pid
+   start program = "/usr/sbin/service openvpn start server"
+   stop program = "/usr/sbin/service openvpn stop server"
+check host tun0 with address 10.8.0.1
+    start program = "/usr/sbin/service openvpn start server"
+    stop program = "/usr/sbin/service openvpn stop server"
+    if failed
+        icmp type echo count 5 with timeout 15 seconds
+    then restart
+check process vpn-network-udp with pidfile /var/run/openvpn/server-udp.pid
+   start program = "/usr/sbin/service openvpn start server-udp"
+   stop program = "/usr/sbin/service openvpn stop server-udp"
+check host tun1 with address 10.8.0.1
+    start program = "/usr/sbin/service openvpn start server-udp"
+    stop program = "/usr/sbin/service openvpn stop server-udp"
+    if failed
+        icmp type echo count 5 with timeout 15 seconds
+    then restart
+check process sshd with pidfile /var/run/sshd.pid
+start program "/etc/init.d/ssh start"
+stop program "/etc/init.d/ssh stop"
+if failed port 22 protocol ssh then restart
+if 5 restarts within 5 cycles then timeout
+
+#########################
+check process fail2ban with pidfile /var/run/fail2ban/fail2ban.pid
+  group services
+  start program = "/etc/init.d/fail2ban force-start"
+  stop  program = "/etc/init.d/fail2ban stop || :"
+  if failed unixsocket /var/run/fail2ban/fail2ban.sock then restart
+  if 5 restarts within 5 cycles then timeout
+check file fail2ban_log with path /var/log/fail2ban.log
+    if match "ERROR|WARNING" then alert
