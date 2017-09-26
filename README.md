@@ -2,7 +2,11 @@
 VPN server monitoring with MonIT and GMail.
 More : https://mmonit.com/monit/documentation/monit.html
 
-Setup : https://www.linode.com/docs/uptime/monitoring/monitoring-servers-with-monit
+Setup : 
+
+https://www.linode.com/docs/uptime/monitoring/monitoring-servers-with-monit
+
+https://www.htpcbeginner.com/install-monit-on-ubuntu-monitor-your-home-server/
 
 After setup :  sudo systemctl restart monit
 
