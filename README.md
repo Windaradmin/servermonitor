@@ -12,9 +12,7 @@ try :
 
 If you get :  Cannot create socket to [0.0.0.0]:2812 -- Connection refused
 
-Please do a :
-#sudo ufw allow 2812/tcp ; monit reload
-#monit start all
+Please do a :sudo ufw allow 2812/tcp;monit reload;monit start all
 
 More info : https://www.digitalocean.com/community/questions/2812-port-not-work-for-monit
 
